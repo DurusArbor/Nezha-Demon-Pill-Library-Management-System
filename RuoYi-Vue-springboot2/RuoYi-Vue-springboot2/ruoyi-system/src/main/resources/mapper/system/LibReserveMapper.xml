@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.LibReserveMapper">
+    
+    <resultMap type="LibReserve" id="LibReserveResult">
+        <result property="reserveId"    column="reserve_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="bookId"    column="book_id"    />
+        <result property="reserveTime"    column="reserve_time"    />
+        <result property="expireTime"    column="expire_time"    />
+        <result property="reserveStatus"    column="reserve_status"    />
+        <result property="bookName"    column="book_name"    />
+        <result property="userName"    column="user_name"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectLibReserveVo">
+        select reserve_id, user_id, book_id, reserve_time, expire_time, reserve_status, create_by, create_time, update_by, update_time, remark from lib_reserve
+    </sql>
+
+    <select id="selectLibReserveList" parameterType="LibReserve" resultMap="LibReserveResult">
+        select r.reserve_id, r.user_id, r.book_id, r.reserve_time, r.expire_time, r.reserve_status,
+               bk.book_name, u.user_name,
+               r.create_by, r.create_time, r.update_by, r.update_time, r.remark
+        from lib_reserve r
+        left join lib_book bk on r.book_id = bk.book_id
+        left join lib_user u on r.user_id = u.user_id
+        <where>  
+            <if test="userId != null "> and r.user_id = #{userId}</if>
+            <if test="bookId != null "> and r.book_id = #{bookId}</if>
+            <if test="reserveStatus != null  and reserveStatus != ''"> and r.reserve_status = #{reserveStatus}</if>
+            <if test="bookName != null and bookName != ''"> and bk.book_name like concat('%', #{bookName}, '%')</if>
+            <if test="userName != null and userName != ''"> and u.user_name like concat('%', #{userName}, '%')</if>
+        </where>
+        order by r.reserve_time desc
+    </select>
+    
+    <select id="selectLibReserveByReserveId" parameterType="Long" resultMap="LibReserveResult">
+        <include refid="selectLibReserveVo"/>
+        where reserve_id = #{reserveId}
+    </select>
+
+    <select id="selectActiveByUserAndBook" resultMap="LibReserveResult">
+        <include refid="selectLibReserveVo"/>
+        where user_id = #{userId} and book_id = #{bookId} and reserve_status in ('0','1')
+        limit 1
+    </select>
+
+    <select id="selectWaitingByBookId" parameterType="Long" resultMap="LibReserveResult">
+        <include refid="selectLibReserveVo"/>
+        where book_id = #{bookId} and reserve_status = '0'
+        order by reserve_time asc
+        limit 1
+    </select>
+
+    <select id="selectMyReserveList" parameterType="Long" resultMap="LibReserveResult">
+        select r.reserve_id, r.user_id, r.book_id, r.reserve_time, r.expire_time, r.reserve_status,
+               bk.book_name, bk.book_author, u.user_name,
+               r.create_by, r.create_time, r.update_by, r.update_time, r.remark
+        from lib_reserve r
+        left join lib_book bk on r.book_id = bk.book_id
+        left join lib_user u on r.user_id = u.user_id
+        where r.user_id = #{userId}
+        order by r.reserve_time desc
+    </select>
+
+    <insert id="insertLibReserve" parameterType="LibReserve" useGeneratedKeys="true" keyProperty="reserveId">
+        insert into lib_reserve
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="bookId != null">book_id,</if>
+            <if test="reserveTime != null">reserve_time,</if>
+            <if test="expireTime != null">expire_time,</if>
+            <if test="reserveStatus != null">reserve_status,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="bookId != null">#{bookId},</if>
+            <if test="reserveTime != null">#{reserveTime},</if>
+            <if test="expireTime != null">#{expireTime},</if>
+            <if test="reserveStatus != null">#{reserveStatus},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateLibReserve" parameterType="LibReserve">
+        update lib_reserve
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="bookId != null">book_id = #{bookId},</if>
+            <if test="reserveTime != null">reserve_time = #{reserveTime},</if>
+            <if test="expireTime != null">expire_time = #{expireTime},</if>
+            <if test="reserveStatus != null">reserve_status = #{reserveStatus},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where reserve_id = #{reserveId}
+    </update>
+
+    <delete id="deleteLibReserveByReserveId" parameterType="Long">
+        delete from lib_reserve where reserve_id = #{reserveId}
+    </delete>
+
+    <delete id="deleteLibReserveByReserveIds" parameterType="String">
+        delete from lib_reserve where reserve_id in 
+        <foreach item="reserveId" collection="array" open="(" separator="," close=")">
+            #{reserveId}
+        </foreach>
+    </delete>
+
+    <update id="expireOverdueReserves">
+        update lib_reserve set reserve_status = '4', update_time = now()
+        where reserve_status = '1' and expire_time &lt; now()
+    </update>
+</mapper>

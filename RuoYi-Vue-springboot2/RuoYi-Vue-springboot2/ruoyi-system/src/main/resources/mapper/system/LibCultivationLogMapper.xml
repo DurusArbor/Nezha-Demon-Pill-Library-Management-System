@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.LibCultivationLogMapper">
+
+    <resultMap type="LibCultivationLog" id="LibCultivationLogResult">
+        <result property="logId"        column="log_id"        />
+        <result property="userId"        column="user_id"        />
+        <result property="changeType"        column="change_type"        />
+        <result property="meritChange"        column="merit_change"        />
+        <result property="demonChange"        column="demon_change"        />
+        <result property="reason"        column="reason"        />
+        <result property="createTime"        column="create_time"        />
+    </resultMap>
+
+    <insert id="insertLibCultivationLog" parameterType="LibCultivationLog" useGeneratedKeys="true" keyProperty="logId">
+        insert into lib_cultivation_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            user_id,
+            <if test="changeType != null">change_type,</if>
+            merit_change,
+            demon_change,
+            <if test="reason != null">reason,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{userId},
+            <if test="changeType != null">#{changeType},</if>
+            #{meritChange},
+            #{demonChange},
+            <if test="reason != null">#{reason},</if>
+            #{createTime}
+        </trim>
+    </insert>
+
+    <select id="selectLogsByUserId" parameterType="Long" resultMap="LibCultivationLogResult">
+        select log_id, user_id, change_type, merit_change, demon_change, reason, create_time
+        from lib_cultivation_log where user_id = #{userId} order by log_id desc limit 50
+    </select>
+</mapper>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.LibCategoryMapper">
+
+    <resultMap type="LibCategory" id="LibCategoryResult">
+        <result property="categoryId"    column="category_id"    />
+        <result property="categoryName"  column="category_name"  />
+        <result property="description"    column="description"    />
+        <result property="sortNum"       column="sort_num"       />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectLibCategoryVo">
+        select category_id, category_name, description, sort_num, create_time from lib_category
+    </sql>
+
+    <select id="selectLibCategoryList" parameterType="LibCategory" resultMap="LibCategoryResult">
+        <include refid="selectLibCategoryVo"/>
+        <where>
+            <if test="categoryName != null and categoryName != ''"> and category_name like concat('%', #{categoryName}, '%')</if>
+        </where>
+        order by sort_num
+    </select>
+
+    <select id="selectLibCategoryByCategoryId" parameterType="Long" resultMap="LibCategoryResult">
+        <include refid="selectLibCategoryVo"/>
+        where category_id = #{categoryId}
+    </select>
+
+    <insert id="insertLibCategory" parameterType="LibCategory" useGeneratedKeys="true" keyProperty="categoryId">
+        insert into lib_category
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="categoryName != null and categoryName != ''">category_name,</if>
+            <if test="description != null">description,</if>
+            <if test="sortNum != null">sort_num,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="categoryName != null and categoryName != ''">#{categoryName},</if>
+            <if test="description != null">#{description},</if>
+            <if test="sortNum != null">#{sortNum},</if>
+            <if test="createTime != null">#{createTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateLibCategory" parameterType="LibCategory">
+        update lib_category
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="categoryName != null and categoryName != ''">category_name = #{categoryName},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="sortNum != null">sort_num = #{sortNum},</if>
+        </trim>
+        where category_id = #{categoryId}
+    </update>
+
+    <delete id="deleteLibCategoryByCategoryId" parameterType="Long">
+        delete from lib_category where category_id = #{categoryId}
+    </delete>
+
+    <delete id="deleteLibCategoryByCategoryIds" parameterType="String">
+        delete from lib_category where category_id in
+        <foreach item="categoryId" collection="array" open="(" separator="," close=")">
+            #{categoryId}
+        </foreach>
+    </delete>
+</mapper>

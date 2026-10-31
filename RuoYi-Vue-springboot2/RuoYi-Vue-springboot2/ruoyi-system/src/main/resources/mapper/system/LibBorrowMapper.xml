@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.LibBorrowMapper">
+    
+    <resultMap type="LibBorrow" id="LibBorrowResult">
+        <result property="borrowId"    column="borrow_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="bookId"    column="book_id"    />
+        <result property="borrowTime"    column="borrow_time"    />
+        <result property="returnTime"    column="return_time"    />
+        <result property="deadlineTime"    column="deadline_time"    />
+        <result property="demonSettledDays"    column="demon_settled_days"    />
+        <result property="borrowStatus"    column="borrow_status"    />
+        <result property="renewCount"    column="renew_count"    />
+        <result property="bookName"    column="book_name"    />
+        <result property="userName"    column="user_name"    />
+        <result property="fineAmount"    column="fine_amount"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectLibBorrowVo">
+        select b.borrow_id, b.user_id, b.book_id, b.borrow_time, b.return_time, b.deadline_time, b.demon_settled_days, b.borrow_status, b.renew_count,
+               (select coalesce(sum(fine_amount), 0) from lib_fine where borrow_id = b.borrow_id and fine_status = '0') as fine_amount,
+               bk.book_name, u.user_name,
+               b.create_by, b.create_time, b.update_by, b.update_time, b.remark
+        from lib_borrow b
+        left join lib_book bk on b.book_id = bk.book_id
+        left join lib_user u on b.user_id = u.user_id
+    </sql>
+
+    <select id="selectLibBorrowList" parameterType="LibBorrow" resultMap="LibBorrowResult">
+        <include refid="selectLibBorrowVo"/>
+        <where>  
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="bookId != null "> and book_id = #{bookId}</if>
+            <if test="borrowTime != null "> and borrow_time = #{borrowTime}</if>
+            <if test="returnTime != null "> and return_time = #{returnTime}</if>
+            <if test="deadlineTime != null "> and deadline_time = #{deadlineTime}</if>
+            <if test="borrowStatus != null  and borrowStatus != ''"> and b.borrow_status = #{borrowStatus}</if>
+            <if test="bookName != null and bookName != ''"> and bk.book_name like concat('%', #{bookName}, '%')</if>
+            <if test="userName != null and userName != ''"> and u.user_name like concat('%', #{userName}, '%')</if>
+            <if test="renewCount != null"> and b.renew_count = #{renewCount}</if>
+        </where>
+    </select>
+    
+    <select id="selectLibBorrowByBorrowId" parameterType="Long" resultMap="LibBorrowResult">
+        <include refid="selectLibBorrowVo"/>
+        where b.borrow_id = #{borrowId}
+    </select>
+
+    <insert id="insertLibBorrow" parameterType="LibBorrow" useGeneratedKeys="true" keyProperty="borrowId">
+        insert into lib_borrow
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="bookId != null">book_id,</if>
+            <if test="borrowTime != null">borrow_time,</if>
+            <if test="returnTime != null">return_time,</if>
+            <if test="deadlineTime != null">deadline_time,</if>
+            <if test="borrowStatus != null">borrow_status,</if>
+            <if test="renewCount != null">renew_count,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="bookId != null">#{bookId},</if>
+            <if test="borrowTime != null">#{borrowTime},</if>
+            <if test="returnTime != null">#{returnTime},</if>
+            <if test="deadlineTime != null">#{deadlineTime},</if>
+            <if test="borrowStatus != null">#{borrowStatus},</if>
+            <if test="renewCount != null">#{renewCount},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateLibBorrow" parameterType="LibBorrow">
+        update lib_borrow
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="bookId != null">book_id = #{bookId},</if>
+            <if test="borrowTime != null">borrow_time = #{borrowTime},</if>
+            <if test="returnTime != null">return_time = #{returnTime},</if>
+            <if test="deadlineTime != null">deadline_time = #{deadlineTime},</if>
+            <if test="borrowStatus != null">borrow_status = #{borrowStatus},</if>
+            <if test="renewCount != null">renew_count = #{renewCount},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where borrow_id = #{borrowId}
+    </update>
+
+    <delete id="deleteLibBorrowByBorrowId" parameterType="Long">
+        delete from lib_borrow where borrow_id = #{borrowId}
+    </delete>
+
+    <delete id="deleteLibBorrowByBorrowIds" parameterType="String">
+        delete from lib_borrow where borrow_id in
+        <foreach item="borrowId" collection="array" open="(" separator="," close=")">
+            #{borrowId}
+        </foreach>
+    </delete>
+
+    <select id="countActiveByUserId" parameterType="Long" resultType="int">
+        select count(*) from lib_borrow where user_id = #{userId} and borrow_status in ('0','2')
+    </select>
+
+    <select id="countOverdueByUserId" parameterType="Long" resultType="int">
+        select count(*) from lib_borrow where user_id = #{userId} and borrow_status = '2'
+    </select>
+
+    <select id="countTotalByUserId" parameterType="Long" resultType="int">
+        select count(*) from lib_borrow where user_id = #{userId}
+    </select>
+
+    <select id="countOnTimeReturnByUserId" parameterType="Long" resultType="int">
+        select count(*) from lib_borrow where user_id = #{userId} and borrow_status = '1' and return_time is not null and return_time &lt;= deadline_time
+    </select>
+
+    <select id="selectActiveByUserAndBook" resultMap="LibBorrowResult">
+        <include refid="selectLibBorrowVo"/>
+        where b.user_id = #{userId} and b.book_id = #{bookId} and b.borrow_status in ('0','2')
+        limit 1
+    </select>
+
+    <update id="markOverdueRecords">
+        update lib_borrow set borrow_status = '2' where borrow_status = '0' and deadline_time &lt; now()
+    </update>
+
+    <update id="updateDemonSettledDays">
+        update lib_borrow set demon_settled_days = #{days} where borrow_id = #{borrowId}
+    </update>
+
+    <update id="updateRenew">
+        update lib_borrow set renew_count = renew_count + 1,
+               deadline_time = DATE_ADD(deadline_time, INTERVAL #{days} DAY),
+               update_time = now()
+        where borrow_id = #{borrowId}
+    </update>
+
+    <select id="selectMyBorrowList" parameterType="Long" resultMap="LibBorrowResult">
+        select b.borrow_id, b.user_id, b.book_id, b.borrow_time, b.return_time, b.deadline_time,
+               b.borrow_status, b.renew_count,
+               bk.book_name, bk.book_author, u.user_name,
+               f.fine_amount
+        from lib_borrow b
+        left join lib_book bk on b.book_id = bk.book_id
+        left join lib_user u on b.user_id = u.user_id
+        left join (select borrow_id, SUM(fine_amount) fine_amount from lib_fine where fine_status = '0' group by borrow_id) f on f.borrow_id = b.borrow_id
+        where b.user_id = #{userId}
+        order by b.borrow_time desc
+    </select>
+
+    <select id="selectOverdueBorrows" resultMap="LibBorrowResult">
+        <include refid="selectLibBorrowVo"/>
+        where b.borrow_status = '2'
+    </select>
+</mapper>

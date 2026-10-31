@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.LibBookMapper">
+    
+    <resultMap type="LibBook" id="LibBookResult">
+        <result property="bookId"    column="book_id"    />
+        <result property="bookName"    column="book_name"    />
+        <result property="bookAuthor"    column="book_author"    />
+        <result property="bookIsbn"    column="book_isbn"    />
+        <result property="bookPublisher"    column="book_publisher"    />
+        <result property="publishDate"    column="publish_date"    />
+        <result property="bookCount"    column="book_count"    />
+        <result property="borrowCount"    column="borrow_count"    />
+        <result property="bookStatus"    column="book_status"    />
+        <result property="categoryId"    column="category_id"    />
+        <result property="categoryName"    column="category_name"    />
+        <result property="availableCount"    column="available_count"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectLibBookVo">
+        select b.book_id, b.book_name, b.book_author, b.book_isbn, b.book_publisher, b.publish_date,
+               b.book_count, b.borrow_count, (b.book_count - b.borrow_count) as available_count,
+               b.book_status, b.category_id, c.category_name,
+               b.create_by, b.create_time, b.update_by, b.update_time, b.remark
+        from lib_book b left join lib_category c on b.category_id = c.category_id
+    </sql>
+
+    <select id="selectLibBookList" parameterType="LibBook" resultMap="LibBookResult">
+        <include refid="selectLibBookVo"/>
+        <where>
+            <if test="bookName != null  and bookName != ''"> and b.book_name like concat('%', #{bookName}, '%')</if>
+            <if test="bookAuthor != null  and bookAuthor != ''"> and b.book_author = #{bookAuthor}</if>
+            <if test="bookIsbn != null  and bookIsbn != ''"> and b.book_isbn = #{bookIsbn}</if>
+            <if test="categoryId != null"> and b.category_id = #{categoryId}</if>
+            <if test="bookStatus != null  and bookStatus != ''"> and b.book_status = #{bookStatus}</if>
+        </where>
+    </select>
+
+    <select id="selectLibBookByBookId" parameterType="Long" resultMap="LibBookResult">
+        <include refid="selectLibBookVo"/>
+        where b.book_id = #{bookId}
+    </select>
+
+    <insert id="insertLibBook" parameterType="LibBook" useGeneratedKeys="true" keyProperty="bookId">
+        insert into lib_book
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bookName != null and bookName != ''">book_name,</if>
+            <if test="bookAuthor != null">book_author,</if>
+            <if test="bookIsbn != null">book_isbn,</if>
+            <if test="bookPublisher != null">book_publisher,</if>
+            <if test="publishDate != null">publish_date,</if>
+            <if test="bookCount != null">book_count,</if>
+            <if test="borrowCount != null">borrow_count,</if>
+            <if test="bookStatus != null">book_status,</if>
+            <if test="categoryId != null">category_id,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bookName != null and bookName != ''">#{bookName},</if>
+            <if test="bookAuthor != null">#{bookAuthor},</if>
+            <if test="bookIsbn != null">#{bookIsbn},</if>
+            <if test="bookPublisher != null">#{bookPublisher},</if>
+            <if test="publishDate != null">#{publishDate},</if>
+            <if test="bookCount != null">#{bookCount},</if>
+            <if test="borrowCount != null">#{borrowCount},</if>
+            <if test="bookStatus != null">#{bookStatus},</if>
+            <if test="categoryId != null">#{categoryId},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateLibBook" parameterType="LibBook">
+        update lib_book
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="bookName != null and bookName != ''">book_name = #{bookName},</if>
+            <if test="bookAuthor != null">book_author = #{bookAuthor},</if>
+            <if test="bookIsbn != null">book_isbn = #{bookIsbn},</if>
+            <if test="bookPublisher != null">book_publisher = #{bookPublisher},</if>
+            <if test="publishDate != null">publish_date = #{publishDate},</if>
+            <if test="bookCount != null">book_count = #{bookCount},</if>
+            <if test="borrowCount != null">borrow_count = #{borrowCount},</if>
+            <if test="bookStatus != null">book_status = #{bookStatus},</if>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where book_id = #{bookId}
+    </update>
+
+    <delete id="deleteLibBookByBookId" parameterType="Long">
+        delete from lib_book where book_id = #{bookId}
+    </delete>
+
+    <delete id="deleteLibBookByBookIds" parameterType="String">
+        delete from lib_book where book_id in
+        <foreach item="bookId" collection="array" open="(" separator="," close=")">
+            #{bookId}
+        </foreach>
+    </delete>
+
+    <update id="increBorrowCount" parameterType="Long">
+        update lib_book set borrow_count = borrow_count + 1 where book_id = #{bookId}
+    </update>
+
+    <update id="decreBorrowCount" parameterType="Long">
+        update lib_book set borrow_count = borrow_count - 1 where book_id = #{bookId}
+    </update>
+</mapper>

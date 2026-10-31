@@ -1,0 +1,14 @@
+﻿Field	Type	Null	Key	Default	Extra
+fine_id	bigint	NO	PRI	NULL	auto_increment
+borrow_id	bigint	NO	MUL	NULL	
+user_id	bigint	NO	MUL	NULL	
+book_id	bigint	NO		NULL	
+overdue_days	int	YES		0	
+fine_amount	decimal(10,2)	YES		0.00	
+fine_status	char(1)	YES	MUL	0	
+pay_time	datetime	YES		NULL	
+create_by	varchar(64)	YES			
+update_by	varchar(64)	YES			
+update_time	datetime	YES		NULL	
+create_time	datetime	YES		NULL	
+remark	varchar(500)	YES		NULL	

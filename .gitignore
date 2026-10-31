@@ -1,0 +1,60 @@
+# ===== 依赖与构建产物 =====
+node_modules/
+dist/
+target/
+*.class
+*.log
+
+# ===== 开发日志 / 临时文件 =====
+backend-*
+frontend-*
+build-*
+probe*.txt
+e2e-*
+reg-e2e.*
+sql-run*.log
+sql-verify.txt
+inspect-system.*
+mvn-find.txt
+port-check.txt
+avatar-verify.txt
+api-paths.txt
+check-*.txt
+col-check.txt
+del-check*.txt
+fix-data.txt
+guard-check.txt
+img-*.txt
+verify*.txt
+test_user.json
+t_fzx.json
+dump_err.txt
+
+# ===== 安装包 / 压缩包 =====
+*.zip
+*.msi
+*.tar.gz
+
+# ===== 本地环境配置 =====
+settings.xml
+
+# ===== 数据库开发期完整备份（保留最新初始化库）=====
+ry-vue*.sql
+!数据库/ry-vue-init.sql
+reserve-test-data.sql
+
+# ===== 本地环境笔记 =====
+环境搭建简易步骤.txt
+
+# ===== IDE / 编辑器 =====
+.idea/
+.vscode/
+*.iml
+
+# ===== 系统文件 =====
+.DS_Store
+Thumbs.db
+
+# ===== 旧嵌套仓库（备份） =====
+.git-old/
+

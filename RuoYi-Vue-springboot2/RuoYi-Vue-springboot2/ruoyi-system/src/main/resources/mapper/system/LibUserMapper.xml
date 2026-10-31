@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.LibUserMapper">
+    
+    <resultMap type="LibUser" id="LibUserResult">
+        <result property="userId"    column="user_id"    />
+        <result property="userName"    column="user_name"    />
+        <result property="userPhone"    column="user_phone"    />
+        <result property="userEmail"    column="user_email"    />
+        <result property="userStatus"    column="user_status"    />
+        <result property="sysUserId"    column="sys_user_id"    />
+        <result property="meritPoints"    column="merit_points"    />
+        <result property="demonValue"    column="demon_value"    />
+        <result property="cultivationLevel"    column="cultivation_level"    />
+        <result property="lastSignDate"    column="last_sign_date"    />
+        <result property="overdueCount"    column="overdue_count"    />
+        <result property="unpaidFineCount" column="unpaid_fine_count" />
+        <result property="forgiveTokens" column="forgive_tokens" />
+        <result property="boxDate" column="box_date" />
+        <result property="boxCountToday" column="box_count_today" />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectLibUserVo">
+        select user_id, user_name, user_phone, user_email, user_status, sys_user_id, merit_points, demon_value, cultivation_level, last_sign_date,
+        (select count(*) from lib_borrow b where b.user_id = lib_user.user_id and b.borrow_status = '2') as overdue_count,
+        (select count(*) from lib_fine f where f.user_id = lib_user.user_id and f.fine_status = '0') as unpaid_fine_count,
+        forgive_tokens, box_date, box_count_today,
+        create_by, create_time, update_by, update_time, remark from lib_user
+    </sql>
+
+    <select id="selectLibUserList" parameterType="LibUser" resultMap="LibUserResult">
+        <include refid="selectLibUserVo"/>
+        <where>  
+            <if test="userName != null  and userName != ''"> and user_name like concat('%', #{userName}, '%')</if>
+            <if test="userPhone != null  and userPhone != ''"> and user_phone = #{userPhone}</if>
+            <if test="userEmail != null  and userEmail != ''"> and user_email = #{userEmail}</if>
+            <if test="userStatus != null  and userStatus != ''"> and user_status = #{userStatus}</if>
+        </where>
+    </select>
+    
+    <select id="selectLibUserByUserId" parameterType="Long" resultMap="LibUserResult">
+        <include refid="selectLibUserVo"/>
+        where user_id = #{userId}
+    </select>
+
+    <select id="selectLibUserBySysUserId" parameterType="Long" resultMap="LibUserResult">
+        <include refid="selectLibUserVo"/>
+        where sys_user_id = #{sysUserId} limit 1
+    </select>
+
+    <insert id="insertLibUser" parameterType="LibUser" useGeneratedKeys="true" keyProperty="userId">
+        insert into lib_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userName != null and userName != ''">user_name,</if>
+            <if test="userPhone != null">user_phone,</if>
+            <if test="userEmail != null">user_email,</if>
+            <if test="userStatus != null">user_status,</if>
+            <if test="sysUserId != null">sys_user_id,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userName != null and userName != ''">#{userName},</if>
+            <if test="userPhone != null">#{userPhone},</if>
+            <if test="userEmail != null">#{userEmail},</if>
+            <if test="userStatus != null">#{userStatus},</if>
+            <if test="sysUserId != null">#{sysUserId},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateLibUser" parameterType="LibUser">
+        update lib_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userName != null and userName != ''">user_name = #{userName},</if>
+            <if test="userPhone != null">user_phone = #{userPhone},</if>
+            <if test="userEmail != null">user_email = #{userEmail},</if>
+            <if test="userStatus != null">user_status = #{userStatus},</if>
+            <if test="sysUserId != null">sys_user_id = #{sysUserId},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where user_id = #{userId}
+    </update>
+
+    <update id="updateCultivation" parameterType="LibUser">
+        update lib_user
+        set merit_points = #{meritPoints},
+            demon_value = #{demonValue},
+            cultivation_level = #{cultivationLevel}
+        where user_id = #{userId}
+    </update>
+
+    <update id="updateLastSignDate" parameterType="LibUser">
+        update lib_user set last_sign_date = #{lastSignDate} where user_id = #{userId}
+    </update>
+
+    <update id="updateLastFortuneDate" parameterType="LibUser">
+        update lib_user set last_fortune_date = #{lastFortuneDate} where user_id = #{userId}
+    </update>
+
+    <update id="updateForgiveTokens">
+        update lib_user set forgive_tokens = forgive_tokens + #{delta} where user_id = #{userId}
+    </update>
+
+    <update id="updateBoxRecord">
+        update lib_user set box_date = #{date}, box_count_today = #{count} where user_id = #{userId}
+    </update>
+
+    <update id="freezeLongOverdueReaders" parameterType="int">
+        update lib_user
+        set user_status = '1'
+        where user_id in (
+            select user_id from lib_borrow
+            where borrow_status = '2'
+              and deadline_time &lt; DATE_SUB(NOW(), INTERVAL #{days} DAY)
+        )
+    </update>
+
+    <select id="countLongOverdueByUserId" resultType="int">
+        select count(*)
+        from lib_borrow
+        where user_id = #{userId}
+          and borrow_status = '2'
+          and deadline_time &lt; DATE_SUB(NOW(), INTERVAL #{days} DAY)
+    </select>
+
+    <update id="unfreezeLibUser" parameterType="Long">
+        update lib_user set user_status = '0' where user_id = #{userId}
+    </update>
+
+    <select id="selectRankList" resultType="java.util.LinkedHashMap">
+        select u.user_id AS userId, u.user_name AS userName,
+               u.merit_points AS meritPoints, u.demon_value AS demonValue,
+               u.cultivation_level AS level,
+               (select count(*) from lib_borrow b where b.user_id = u.user_id and b.borrow_status = '2') AS overdueCount,
+               (select count(*) from lib_fine f where f.user_id = u.user_id and f.fine_status = '0') AS unpaidFineCount
+        from lib_user u
+        order by u.merit_points desc, u.user_id asc
+        limit #{limit}
+    </select>
+
+    <delete id="deleteLibUserByUserId" parameterType="Long">
+        delete from lib_user where user_id = #{userId}
+    </delete>
+
+    <delete id="deleteLibUserByUserIds" parameterType="String">
+        delete from lib_user where user_id in 
+        <foreach item="userId" collection="array" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </delete>
+</mapper>

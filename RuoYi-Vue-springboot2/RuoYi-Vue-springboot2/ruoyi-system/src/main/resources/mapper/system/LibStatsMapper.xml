@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.LibStatsMapper">
+
+    <select id="borrowTrend" resultType="java.util.HashMap">
+        SELECT DATE(borrow_time) AS d, COUNT(*) AS cnt
+        FROM lib_borrow
+        WHERE borrow_time >= DATE_SUB(CURDATE(), INTERVAL #{days} DAY)
+        GROUP BY DATE(borrow_time)
+        ORDER BY d
+    </select>
+
+    <select id="hotBooks" resultType="java.util.HashMap">
+        SELECT b.book_id AS bookId, b.book_name AS bookName, b.book_author AS bookAuthor,
+               COUNT(*) AS borrowCnt
+        FROM lib_borrow br
+        JOIN lib_book b ON br.book_id = b.book_id
+        GROUP BY br.book_id, b.book_name, b.book_author
+        ORDER BY borrowCnt DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="overdueStats" resultType="java.util.HashMap">
+        SELECT COALESCE(SUM(borrow_status IN ('0', '2')), 0) AS active_total,
+               COALESCE(SUM(borrow_status = '2'), 0) AS overdue
+        FROM lib_borrow
+    </select>
+
+    <select id="stockTotal" resultType="java.util.HashMap">
+        SELECT COUNT(*) AS kinds,
+               COALESCE(SUM(book_count), 0) AS stock_total,
+               COALESCE(SUM(borrow_count), 0) AS borrowed
+        FROM lib_book
+    </select>
+
+    <select id="natureDist" resultType="java.util.HashMap">
+        SELECT CASE
+                   WHEN COALESCE(o.overdue_cnt, 0) > 0 OR COALESCE(f.unpaid_cnt, 0) > 0 OR u.demon_value >= 30 THEN 'demon'
+                   ELSE 'spirit'
+               END AS nature,
+               COUNT(*) AS cnt
+        FROM lib_user u
+        LEFT JOIN (SELECT user_id, COUNT(*) AS overdue_cnt FROM lib_borrow WHERE borrow_status = '2' GROUP BY user_id) o ON o.user_id = u.user_id
+        LEFT JOIN (SELECT user_id, COUNT(*) AS unpaid_cnt FROM lib_fine WHERE fine_status = '0' GROUP BY user_id) f ON f.user_id = u.user_id
+        GROUP BY nature
+    </select>
+
+    <select id="borrowHeatmap" resultType="java.util.HashMap">
+        SELECT DAYOFWEEK(borrow_time) - 1 AS weekday,
+               HOUR(borrow_time) AS hour,
+               COUNT(*) AS cnt
+        FROM lib_borrow
+        GROUP BY weekday, hour
+    </select>
+
+    <select id="readerCategoryDist" resultType="java.util.HashMap">
+        SELECT c.category_id AS categoryId, c.category_name AS categoryName, COUNT(*) AS cnt
+        FROM lib_borrow br
+        JOIN lib_book b ON br.book_id = b.book_id
+        JOIN lib_category c ON b.category_id = c.category_id
+        WHERE br.user_id = #{userId}
+        GROUP BY c.category_id, c.category_name
+        ORDER BY cnt DESC
+    </select>
+
+    <select id="recommendBooks" resultType="java.util.HashMap">
+        SELECT b.book_id AS bookId, b.book_name AS bookName, b.book_author AS bookAuthor,
+               COUNT(br.borrow_id) AS borrowCnt
+        FROM lib_book b
+        LEFT JOIN lib_borrow br ON br.book_id = b.book_id
+        WHERE b.category_id = #{categoryId}
+          AND b.book_id NOT IN (SELECT book_id FROM lib_borrow WHERE user_id = #{userId})
+        GROUP BY b.book_id, b.book_name, b.book_author
+        ORDER BY borrowCnt DESC
+        LIMIT #{limit}
+    </select>
+</mapper>
